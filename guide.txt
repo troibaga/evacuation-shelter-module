@@ -1,0 +1,400 @@
+================================================================================
+  GUIDE: ADDING INTERACTIVE POLYGONS TO LEAFLET MAP
+================================================================================
+
+Project: FLOWS - Evacuation Shelters Overview
+Purpose: Display flood zones, evacuation areas, shelter coverage zones, etc.
+
+================================================================================
+1. WHAT ARE POLYGONS?
+================================================================================
+
+Polygons are closed shapes with multiple coordinate points. In FLOWS, you can use
+them to represent:
+  • Flood-prone areas
+  • Evacuation zones
+  • Shelter service areas
+  • Barangay boundaries
+  • No-go zones
+
+================================================================================
+2. BASIC POLYGON IMPLEMENTATION WITH REACT-LEAFLET
+================================================================================
+
+Option A: Using GeoJSON (Recommended for Complex Shapes)
+─────────────────────────────────────────────────────────
+
+GeoJSON is a standard format for geographic data. Example:
+
+  import { GeoJSON } from 'react-leaflet';
+  
+  const floodZoneGeoJSON = {
+    type: "Feature",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [123.14, 13.56],
+          [123.15, 13.56],
+          [123.15, 13.57],
+          [123.14, 13.57],
+          [123.14, 13.56]  // Must close the polygon
+        ]
+      ]
+    }
+  };
+  
+  <MapContainer ...>
+    <TileLayer ... />
+    <GeoJSON data={floodZoneGeoJSON} />
+  </MapContainer>
+
+
+Option B: Using Polygon Component (Simple Shapes)
+──────────────────────────────────────────────────
+
+For simple polygons, use the Polygon component directly:
+
+  import { Polygon } from 'react-leaflet';
+  
+  const polygonCoordinates = [
+    [13.56, 123.14],
+    [13.57, 123.14],
+    [13.57, 123.15],
+    [13.56, 123.15]
+  ];
+  
+  <MapContainer ...>
+    <TileLayer ... />
+    <Polygon 
+      positions={polygonCoordinates}
+      pathOptions={{ 
+        color: '#FF0000', 
+        fillColor: '#FF0000',
+        fillOpacity: 0.3 
+      }}
+    />
+  </MapContainer>
+
+
+================================================================================
+3. HOW TO SHAPE POLYGONS
+================================================================================
+
+Method 1: Manual Coordinate Entry
+─────────────────────────────────
+
+Get coordinates from:
+  • Google Maps (right-click → coordinates)
+  • OpenStreetMap
+  • geojson.io (Draw and export as GeoJSON)
+  • Your backend GIS system
+
+Enter coordinates as [latitude, longitude] pairs.
+
+
+Method 2: Use Leaflet Draw Plugin (Interactive Drawing)
+────────────────────────────────────────────────────────
+
+Install:
+  npm install leaflet-draw react-leaflet-draw
+
+Usage in your MapComponent:
+
+  import { FeatureGroup } from 'react-leaflet';
+  import { EditControl } from 'react-leaflet-draw';
+  import 'leaflet-draw/dist/leaflet.draw.css';
+  
+  export default function MapComponent() {
+    const onCreated = (e) => {
+      const data = e.layer.toGeoJSON();
+      console.log('Polygon created:', data);
+      // Save to database
+    };
+  
+    return (
+      <MapContainer ...>
+        <TileLayer ... />
+        <FeatureGroup>
+          <EditControl
+            position="topleft"
+            onCreated={onCreated}
+            draw={{
+              circle: false,
+              circlemarker: false,
+              rectangle: true,
+              polygon: true,
+              polyline: false,
+              marker: false
+            }}
+          />
+        </FeatureGroup>
+      </MapContainer>
+    );
+  }
+
+
+Method 3: Import Pre-drawn GeoJSON Files
+─────────────────────────────────────────
+
+Store your polygons as GeoJSON files:
+  public/zones/flood-zones.geojson
+  public/zones/barangays.geojson
+  public/zones/shelters.geojson
+
+Load them:
+
+  const [floodZones, setFloodZones] = useState(null);
+  
+  useEffect(() => {
+    fetch('/zones/flood-zones.geojson')
+      .then(res => res.json())
+      .then(data => setFloodZones(data));
+  }, []);
+  
+  return (
+    <MapContainer ...>
+      <TileLayer ... />
+      {floodZones && <GeoJSON data={floodZones} />}
+    </MapContainer>
+  );
+
+
+================================================================================
+4. STYLING POLYGONS
+================================================================================
+
+PathOptions include:
+
+  {
+    color: '#FF0000',              // Outline color (hex or named)
+    weight: 2,                     // Outline thickness (pixels)
+    opacity: 1,                    // Outline opacity (0-1)
+    fillColor: '#FF0000',          // Fill color
+    fillOpacity: 0.3,              // Fill transparency (0-1)
+    dashArray: '5, 5',             // Dashed lines (dash, gap)
+    lineCap: 'round',              // Line endings
+    lineJoin: 'round'              // Line corners
+  }
+
+Example for flood zones:
+
+  <Polygon
+    positions={floodZoneCoords}
+    pathOptions={{
+      color: '#EF4444',            // Red
+      weight: 1.5,
+      opacity: 0.7,
+      fillColor: '#FCA5A5',        // Light red
+      fillOpacity: 0.2
+    }}
+  />
+
+Example for evacuation routes:
+
+  <Polygon
+    positions={routeCoords}
+    pathOptions={{
+      color: '#3B82F6',            // Blue
+      weight: 2,
+      opacity: 0.8,
+      dashArray: '5, 5',           // Dashed line
+      fillOpacity: 0                // No fill, outline only
+    }}
+  />
+
+
+================================================================================
+5. ADDING INTERACTIVITY
+================================================================================
+
+Click Events:
+
+  const onPolygonClick = (e) => {
+    const zone = e.target.feature?.properties;
+    console.log('Zone clicked:', zone);
+  };
+  
+  <Polygon
+    positions={coords}
+    pathOptions={{ ... }}
+    eventHandlers={{
+      click: onPolygonClick
+    }}
+  />
+
+
+Hover Effects:
+
+  const onMouseOver = (e) => {
+    e.target.setStyle({
+      fillOpacity: 0.6
+    });
+  };
+  
+  const onMouseOut = (e) => {
+    e.target.setStyle({
+      fillOpacity: 0.2
+    });
+  };
+  
+  <Polygon
+    positions={coords}
+    eventHandlers={{
+      mouseover: onMouseOver,
+      mouseout: onMouseOut
+    }}
+  />
+
+
+Popups:
+
+  import { Popup, Polygon } from 'react-leaflet';
+  
+  <Polygon positions={coords}>
+    <Popup>
+      <div>
+        <strong>Flood Zone A</strong>
+        <p>Risk Level: High</p>
+        <p>Evacuation Priority: 1</p>
+      </div>
+    </Popup>
+  </Polygon>
+
+
+================================================================================
+6. REAL-WORLD EXAMPLES FOR FLOWS
+================================================================================
+
+Example 1: Flood Susceptibility Zones
+
+  const floodZones = [
+    {
+      name: 'High Risk',
+      color: '#DC2626',   // Dark red
+      fillOpacity: 0.4,
+      coords: [[13.56, 123.14], [13.57, 123.14], ...]
+    },
+    {
+      name: 'Medium Risk',
+      color: '#F97316',   // Orange
+      fillOpacity: 0.3,
+      coords: [[13.58, 123.12], [13.59, 123.12], ...]
+    },
+    {
+      name: 'Low Risk',
+      color: '#EAB308',   // Yellow
+      fillOpacity: 0.2,
+      coords: [[13.60, 123.10], [13.61, 123.10], ...]
+    }
+  ];
+  
+  {floodZones.map(zone => (
+    <Polygon
+      key={zone.name}
+      positions={zone.coords}
+      pathOptions={{
+        color: zone.color,
+        fillColor: zone.color,
+        fillOpacity: zone.fillOpacity,
+        weight: 1
+      }}
+    />
+  ))}
+
+
+Example 2: Shelter Coverage Areas
+
+  const shelters = [
+    {
+      id: 1,
+      name: 'Rizal Community Center',
+      capacity: 500,
+      coverage: [[13.56, 123.14], [13.57, 123.14], ...]
+    }
+  ];
+  
+  {shelters.map(shelter => (
+    <Polygon
+      key={shelter.id}
+      positions={shelter.coverage}
+      pathOptions={{
+        color: '#3B82F6',         // Blue
+        fillColor: '#3B82F6',
+        fillOpacity: 0.15,
+        weight: 1.5,
+        dashArray: '3, 3'
+      }}
+    >
+      <Popup>
+        <div>
+          <strong>{shelter.name}</strong>
+          <p>Capacity: {shelter.capacity} persons</p>
+        </div>
+      </Popup>
+    </Polygon>
+  ))}
+
+
+================================================================================
+7. STORING POLYGON DATA
+================================================================================
+
+Save to Supabase:
+
+  import { supabase } from '@/lib/supabaseClient';
+  
+  const savePolygon = async (geoJSON, zoneType) => {
+    const { data, error } = await supabase
+      .from('zones')
+      .insert({
+        type: zoneType,
+        geometry: geoJSON.geometry,
+        properties: geoJSON.properties,
+        created_at: new Date()
+      });
+    
+    if (error) console.error('Error saving polygon:', error);
+    return data;
+  };
+
+
+Database Schema (PostgreSQL with PostGIS):
+
+  CREATE TABLE zones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    type VARCHAR (50),            -- 'flood', 'evacuation', 'shelter'
+    name VARCHAR (255),
+    geometry GEOMETRY(POLYGON, 4326),
+    properties JSONB,             -- metadata
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+  );
+
+
+================================================================================
+8. USEFUL TOOLS & RESOURCES
+================================================================================
+
+• geojson.io - Draw and validate GeoJSON
+• Leaflet Documentation - https://leafletjs.com/reference.html
+• React-Leaflet - https://react-leaflet.js.org/
+• PostGIS for database - https://postgis.net/
+• Leaflet-Draw - Interactive drawing on maps
+• Shapefile to GeoJSON converter - Online tools available
+
+================================================================================
+9. NEXT STEPS
+================================================================================
+
+1. Choose your polygon source (GeoJSON files, database, or draw tool)
+2. Implement styling based on zone type
+3. Add interactivity (click, hover, popups)
+4. Connect to Supabase for persistence
+5. Add legend to explain zone colors to users
+6. Test with real flood/evacuation data
+
+For more info on implementing these features, refer to the MapComponent.tsx
+and consult the Leaflet + React-Leaflet documentation.
+
+================================================================================
