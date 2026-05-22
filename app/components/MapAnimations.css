@@ -1,0 +1,22 @@
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -50;
+  }
+}
+
+.navigation-path-animated {
+  animation: dash-flow 2s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+}
+
+/* Pulse effect for user location indicator if needed */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
