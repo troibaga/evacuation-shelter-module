@@ -243,4 +243,3 @@ export async function PUT(
     return NextResponse.json({ error: error.message || "Failed to update shelter." }, { status: 500 });
   }
 }
-}
