@@ -1,0 +1,89 @@
+.modalWrapper {
+  scrollbar-color: rgba(100, 100, 100, 0.35) transparent;
+  scrollbar-width: thin;
+}
+
+.modalWrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalWrapper::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.3);
+  border-radius: 999px;
+}
+
+.control {
+  width: 100%;
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.control:hover {
+  filter: brightness(1.02);
+}
+
+.control:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+  border-color: #2563eb;
+}
+
+.control:invalid {
+  border-color: #ef4444;
+}
+
+.control:valid {
+  border-color: #10b981;
+}
+
+.control.invalid {
+  border-color: #ef4444;
+}
+
+.control[type="number"]::-webkit-outer-spin-button,
+.control[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.control[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.selectControl {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.button {
+  border-radius: 4px;
+  transition: filter 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(0.88);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.button:active:not(:disabled) {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.fieldPanel {
+  border-radius: 4px;
+}
